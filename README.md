@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/1468848933.svg)](https://doi.org/10.5281/zenodo.24468313)
+
 # *IoTick* Web Application
 
 *Acoustic pulse generator and phase-delay controller for auditory timing experiments*
