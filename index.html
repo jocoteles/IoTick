@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IoTick</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: #1a1d24;
+            --accent: #00e5ff;
+            --accent-glow: rgba(0, 229, 255, 0.3);
+            --text-main: #f0f0f0;
+            --text-muted: #8b92a5;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --tab-bg: #222630;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(26, 29, 36, 1) 0%, rgba(15, 17, 21, 1) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        /* Power Button */
+        .power-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #2f3640;
+            color: var(--text-main);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .power-btn.active {
+            background: var(--success);
+            color: #000;
+            box-shadow: 0 0 20px rgba(46, 213, 115, 0.4);
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--danger);
+            transition: background-color 0.3s ease;
+        }
+
+        .power-btn.active .indicator {
+            background-color: #000;
+        }
+
+        /* Tabs System */
+        .tabs-nav {
+            display: flex;
+            background-color: var(--tab-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--card-bg);
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Cards and Controls */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .value-display {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--accent);
+            background: rgba(0, 229, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #2f3640;
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -9px;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Vertical Sliders Styling */
+        .sliders-pair-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .vertical-control-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Drum Wheel Style */
+        .wheel-control {
+            width: 80px;
+            height: 200px;
+            background: #15181e;
+            border: 3px solid #3a3f4d;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            cursor: grab;
+            touch-action: none;
+            box-shadow:
+                inset 0 15px 15px rgba(0, 0, 0, 0.8),
+                inset 0 -15px 15px rgba(0, 0, 0, 0.8),
+                0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .wheel-control:active {
+            cursor: grabbing;
+        }
+
+        .wheel-ribs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: repeating-linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0.05) 0px,
+                    rgba(255, 255, 255, 0.05) 1px,
+                    transparent 2px,
+                    transparent 15px,
+                    rgba(0, 0, 0, 0.4) 16px,
+                    rgba(0, 0, 0, 0.6) 18px,
+                    transparent 19px,
+                    transparent 30px);
+            background-position-y: 0px;
+        }
+
+        .wheel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(to bottom,
+                    rgba(15, 17, 21, 0.95) 0%,
+                    rgba(15, 17, 21, 0.4) 15%,
+                    transparent 40%,
+                    transparent 60%,
+                    rgba(15, 17, 21, 0.4) 85%,
+                    rgba(15, 17, 21, 0.95) 100%);
+        }
+
+        .wheel-center-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .gain-slider-container {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #gainSlider {
+            writing-mode: vertical-lr;
+            direction: rtl;
+            width: 10px;
+            height: 200px;
+            background: #2f3640;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        #gainSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        #gainSlider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Registry Panel Table */
+        .btn-action {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: #2f3640;
+            color: var(--text-main);
+            font-size: 0.85rem;
+        }
+
+        .btn-action:hover {
+            background-color: #3e4450;
+        }
+
+        .btn-action.primary {
+            background-color: var(--accent);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .btn-action.primary:hover {
+            background-color: #00b8d4;
+        }
+
+        .btn-action.danger {
+            background-color: rgba(255, 71, 87, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 71, 87, 0.2);
+        }
+
+        .btn-action.danger:hover {
+            background-color: rgba(255, 71, 87, 0.2);
+        }
+
+        .table-container {
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            background: #15181e;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background-color: #1a1d24;
+            color: var(--text-muted);
+            padding: 10px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            color: var(--text-main);
+        }
+
+        tr:nth-child(even) td {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+        }
+
+        .btn-delete:hover {
+            background-color: rgba(255, 71, 87, 0.1);
+        }
+
+        .records-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .records-footer .btn-action {
+            flex: 1;
+        }
+
+        /* Toggle Switch styling */
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2f3640;
+            transition: .3s;
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-main);
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider-toggle {
+            background-color: var(--accent);
+        }
+
+        input:checked+.slider-toggle:before {
+            transform: translateX(24px);
+            background-color: #000;
+        }
+
+        .instructions {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 15px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>IoTick</h1>
+    </header>
+
+    <div class="container">
+
+        <!-- Power Button -->
+        <button id="powerBtn" class="power-btn">
+            <div class="indicator"></div>
+            <span id="powerText">Off</span>
+        </button>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-target="tab-controls">Controls</button>
+            <button class="tab-btn" data-target="tab-params">Parameters</button>
+        </div>
+
+        <!-- TAB 1: CONTROLS -->
+        <div id="tab-controls" class="tab-content active">
+
+            <!-- Pair of Vertical Controls (Wheel and Gain) -->
+            <div class="card">
+                <div class="sliders-pair-container">
+
+                    <!-- Left: Time Offset (Infinite Drum Wheel) -->
+                    <div class="vertical-control-wrapper">
+                        <span class="control-label">Time Offset</span>
+                        <div class="wheel-control" id="offsetWheel">
+                            <div class="wheel-ribs" id="wheelRibs"></div>
+                            <div class="wheel-overlay"></div>
+                            <div class="wheel-center-line"></div>
+                        </div>
+                        <span class="value-display" id="offsetValue">0 ms</span>
+                    </div>
+
+                    <!-- Right: Gain (Standard Vertical Range) -->
+                    <div class="vertical-control-wrapper">
+                        <span class="control-label">Gain</span>
+                        <div class="gain-slider-container">
+                            <input type="range" id="gainSlider" min="0" max="200" step="1" value="100">
+                        </div>
+                        <span class="value-display" id="gainValue">100%</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Registry Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Offset Records</h2>
+                    <button id="btnRecord" class="btn-action primary">Record</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time</th>
+                                <th>Offset</th>
+                                <th style="width: 45px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsBody">
+                            <!-- Dynamically added rows -->
+                        </tbody>
+                    </table>
+                    <div id="noRecordsMsg" class="instructions" style="margin: 15px 0;">No records found.</div>
+                </div>
+
+                <div class="records-footer">
+                    <button id="btnSave" class="btn-action">Save</button>
+                    <button id="btnCopy" class="btn-action">Copy</button>
+                    <button id="btnClear" class="btn-action danger">Clear</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB 2: PARAMETERS -->
+        <div id="tab-params" class="tab-content">
+
+            <!-- Base Interval (Period) -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Base Interval (Period)</h2>
+                    <span class="value-display" id="intervalValue">1.00 s</span>
+                </div>
+                <input type="range" id="intervalSlider" min="0.2" max="2.0" step="0.2" value="1.0">
+            </div>
+
+            <!-- Carrier Frequency Control -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Carrier Frequency</h2>
+                    <span class="value-display" id="freqValue">4000 Hz</span>
+                </div>
+                <input type="range" id="freqSlider" min="3000" max="5000" step="200" value="4000">
+            </div>
+
+            <!-- Envelope Decay Time Control -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Envelope Decay</h2>
+                    <span class="value-display" id="decayValue">50 ms</span>
+                </div>
+                <input type="range" id="decaySlider" min="10" max="100" step="10" value="50">
+            </div>
+
+            <!-- Hide Records Toggle -->
+            <div class="card">
+                <div class="toggle-container">
+                    <span class="control-label" style="color: var(--text-main);">Hide Records</span>
+                    <label class="switch">
+                        <input type="checkbox" id="hideRecordsToggle">
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // DOM Elements
+        const powerBtn = document.getElementById('powerBtn');
+        const powerText = document.getElementById('powerText');
+
+        // Tab Elements
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Controls Elements
+        const offsetWheel = document.getElementById('offsetWheel');
+        const wheelRibs = document.getElementById('wheelRibs');
+        const offsetValue = document.getElementById('offsetValue');
+        const gainSlider = document.getElementById('gainSlider');
+        const gainValue = document.getElementById('gainValue');
+
+        // Parameters Elements
+        const intervalSlider = document.getElementById('intervalSlider');
+        const intervalValue = document.getElementById('intervalValue');
+        const freqSlider = document.getElementById('freqSlider');
+        const freqValue = document.getElementById('freqValue');
+        const decaySlider = document.getElementById('decaySlider');
+        const decayValue = document.getElementById('decayValue');
+        const hideRecordsToggle = document.getElementById('hideRecordsToggle');
+
+        // Table Elements
+        const btnRecord = document.getElementById('btnRecord');
+        const recordsBody = document.getElementById('recordsBody');
+        const noRecordsMsg = document.getElementById('noRecordsMsg');
+        const btnSave = document.getElementById('btnSave');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnClear = document.getElementById('btnClear');
+
+        // State Variables
+        let isPlaying = false;
+        let audioCtx;
+        let startTime = 0; // Hardware audio clock reference upon start
+
+        // Audio Engine Timing Variables
+        const lookahead = 25.0; // ms
+        const scheduleAheadTime = 0.5; // s (500 ms look-ahead buffer)
+        let timerID;
+        const scheduledIndices = new Set(); // Stores scheduled pulse indices to prevent duplicates
+
+        // Master gain node
+        let masterGainNode;
+
+        // Infinite Wheel Logic State
+        let offsetMs = 0; // 0 to Max interval limit in ms
+        let isDraggingWheel = false;
+        let startWheelY = 0;
+        let startOffsetMs = 0;
+        let wheelBackgroundY = 0;
+
+        // Registry Table State
+        let records = [];
+        let recordCounter = 1;
+        let isSaved = true; // Tracks whether current modifications were copied or saved
+        let hideRecordsActive = false;
+
+        // Wake Lock
+        let wakeLock = null;
+
+        // -------------------------
+        // UI Interaction Handlers
+        // -------------------------
+
+        // Tabs Logic
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                btn.classList.add('active');
+                document.getElementById(btn.getAttribute('data-target')).classList.add('active');
+            });
+        });
+
+        // Sliders Text Updates
+        intervalSlider.addEventListener('input', (e) => {
+            intervalValue.textContent = parseFloat(e.target.value).toFixed(2) + ' s';
+            adjustOffsetToInterval();
+            if (isPlaying && audioCtx) {
+                startTime = audioCtx.currentTime;
+                scheduledIndices.clear();
+            }
+        });
+
+        freqSlider.addEventListener('input', (e) => {
+            freqValue.textContent = e.target.value + ' Hz';
+        });
+
+        decaySlider.addEventListener('input', (e) => {
+            decayValue.textContent = e.target.value + ' ms';
+        });
+
+        gainSlider.addEventListener('input', (e) => {
+            gainValue.textContent = e.target.value + '%';
+            if (masterGainNode) {
+                let baseGain = parseFloat(e.target.value) / 100;
+                masterGainNode.gain.setTargetAtTime(baseGain, audioCtx.currentTime, 0.02);
+            }
+        });
+
+        // Infinite Scroll Wheel Logic (Vertical drag)
+        offsetWheel.addEventListener('pointerdown', (e) => {
+            isDraggingWheel = true;
+            startWheelY = e.clientY;
+            startOffsetMs = offsetMs;
+            offsetWheel.setPointerCapture(e.pointerId);
+        });
+
+        offsetWheel.addEventListener('pointermove', (e) => {
+            if (!isDraggingWheel) return;
+
+            const deltaY = startWheelY - e.clientY;
+
+            // 1 pixel of vertical drag = 1 millisecond adjustment
+            let targetVal = Math.round(startOffsetMs + deltaY);
+
+            // Dynamic ceiling interval in milliseconds
+            const baseIntervalSec = parseFloat(intervalSlider.value);
+            const maxMs = Math.round(baseIntervalSec * 1000);
+
+            // Modular Cyclic / Infinite Behavior
+            if (maxMs > 0) {
+                targetVal = targetVal % maxMs;
+                if (targetVal < 0) {
+                    targetVal += maxMs;
+                }
+            } else {
+                targetVal = 0;
+            }
+
+            offsetMs = targetVal;
+
+            // Visual rotation via background movement of ribs
+            wheelBackgroundY = (startOffsetMs + deltaY) * 0.4;
+            wheelRibs.style.backgroundPositionY = `${wheelBackgroundY}px`;
+
+            updateOffsetDisplay();
+        });
+
+        offsetWheel.addEventListener('pointerup', (e) => {
+            if (isDraggingWheel) {
+                offsetWheel.releasePointerCapture(e.pointerId);
+                isDraggingWheel = false;
+            }
+        });
+
+        // Clamp / wrap offset when Base Interval changes
+        function adjustOffsetToInterval() {
+            const baseIntervalSec = parseFloat(intervalSlider.value);
+            const maxMs = Math.round(baseIntervalSec * 1000);
+            if (maxMs > 0) {
+                offsetMs = offsetMs % maxMs;
+                if (offsetMs < 0) {
+                    offsetMs += maxMs;
+                }
+            } else {
+                offsetMs = 0;
+            }
+            updateOffsetDisplay();
+        }
+
+        function updateOffsetDisplay() {
+            if (hideRecordsActive) {
+                offsetValue.textContent = '*** ms';
+            } else {
+                offsetValue.textContent = offsetMs + ' ms';
+            }
+        }
+
+        // Toggle Hide Records
+        hideRecordsToggle.addEventListener('change', (e) => {
+            hideRecordsActive = e.target.checked;
+            updateOffsetDisplay();
+            renderTable();
+        });
+
+        // -------------------------
+        // Audio Engine & Sync Logic
+        // -------------------------
+
+        function scheduleTone(time, frequency) {
+            if (!audioCtx) return;
+
+            const decaySec = parseFloat(decaySlider.value) / 1000.0;
+            const envelopeGain = audioCtx.createGain();
+            envelopeGain.connect(masterGainNode);
+
+            // Ensure absolute silence 10 ms before pulse triggers
+            envelopeGain.gain.setValueAtTime(0.0001, time - 0.010);
+
+            // Trigger envelope attack and decay at exact schedule time
+            envelopeGain.gain.setValueAtTime(0.0001, time);
+            envelopeGain.gain.exponentialRampToValueAtTime(1.0, time + 0.001);
+            envelopeGain.gain.exponentialRampToValueAtTime(0.0001, time + decaySec);
+
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(frequency, time - 0.010);
+
+            osc.connect(envelopeGain);
+
+            // Start oscillator 10 ms early in silence to eliminate browser audio block allocation latency
+            osc.start(time - 0.010);
+            osc.stop(time + decaySec + 0.02);
+        }
+
+        /**
+         * The scheduler locks periodic pulses directly to the Web Audio API hardware clock
+         * (audioCtx.currentTime) with a 500 ms look-ahead buffer, isolating pulse timing
+         * from main-thread UI rendering latencies, clicks, or tab switches.
+         */
+        function scheduler() {
+            if (!isPlaying) return;
+
+            const period = parseFloat(intervalSlider.value); // s
+            const totalShift = offsetMs / 1000.0; // s
+
+            const nowAudio = audioCtx.currentTime;
+
+            // 100 ms safety buffer to ensure no pulse is scheduled with zero lookahead,
+            // preventing glitches or buffer underruns.
+            const safetyBuffer = 0.100; // 100 ms
+
+            // Calculate first index k that falls at least safetyBuffer into the future
+            const minElapsed = (nowAudio + safetyBuffer) - startTime - totalShift;
+            let k = Math.max(0, Math.ceil(minElapsed / period));
+
+            while (true) {
+                const pulseTimeAudio = startTime + (k * period) + totalShift;
+
+                // 500 ms look-ahead scheduling horizon
+                if (pulseTimeAudio > nowAudio + scheduleAheadTime) {
+                    break;
+                }
+
+                if (!scheduledIndices.has(k)) {
+                    scheduleTone(pulseTimeAudio, parseFloat(freqSlider.value));
+                    scheduledIndices.add(k);
+                }
+                k++;
+            }
+
+            // Cleanup past scheduled indices from memory
+            const minK = Math.floor((nowAudio - startTime - 5) / period);
+            for (const key of scheduledIndices) {
+                if (key < minK) {
+                    scheduledIndices.delete(key);
+                }
+            }
+
+            timerID = setTimeout(scheduler, lookahead);
+        }
+
+        // -------------------------
+        // Registry Panel Actions
+        // -------------------------
+
+        function renderTable() {
+            recordsBody.innerHTML = '';
+
+            if (records.length === 0) {
+                noRecordsMsg.style.display = 'block';
+            } else {
+                noRecordsMsg.style.display = 'none';
+                records.forEach(rec => {
+                    const tr = document.createElement('tr');
+
+                    const tdNum = document.createElement('td');
+                    tdNum.textContent = rec.id;
+
+                    const tdTime = document.createElement('td');
+                    tdTime.textContent = rec.time;
+
+                    const tdDef = document.createElement('td');
+                    tdDef.textContent = hideRecordsActive ? '***' : rec.offset + ' ms';
+
+                    const tdAction = document.createElement('td');
+                    const btnDel = document.createElement('button');
+                    btnDel.className = 'btn-delete';
+                    btnDel.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                    `;
+                    btnDel.addEventListener('click', () => deleteRecord(rec.id));
+                    tdAction.appendChild(btnDel);
+
+                    tr.appendChild(tdNum);
+                    tr.appendChild(tdTime);
+                    tr.appendChild(tdDef);
+                    tr.appendChild(tdAction);
+                    recordsBody.appendChild(tr);
+                });
+            }
+        }
+
+        function addRecord() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const timeStr = `${hh}:${mm}:${ss}`;
+
+            const newRecord = {
+                id: recordCounter++,
+                time: timeStr,
+                offset: offsetMs
+            };
+
+            records.push(newRecord);
+            isSaved = false;
+            renderTable();
+        }
+
+        function deleteRecord(id) {
+            records = records.filter(rec => rec.id !== id);
+            isSaved = false;
+            renderTable();
+        }
+
+        // Record
+        btnRecord.addEventListener('click', addRecord);
+
+        // Save (CSV) — always exports numerical values, revealing readings collected in blind mode
+        btnSave.addEventListener('click', () => {
+            if (records.length === 0) return;
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Number,Time,Offset (ms)\n";
+
+            records.forEach(rec => {
+                csvContent += `${rec.id},${rec.time},${rec.offset}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `iotick_records_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            isSaved = true;
+        });
+
+        // Copy to clipboard — always exports numerical values, revealing readings collected in blind mode
+        btnCopy.addEventListener('click', () => {
+            if (records.length === 0) return;
+
+            let textContent = "#\tTime\tOffset\n";
+            records.forEach(rec => {
+                textContent += `${rec.id}\t${rec.time}\t${rec.offset} ms\n`;
+            });
+
+            navigator.clipboard.writeText(textContent).then(() => {
+                alert('Table copied to clipboard!');
+                isSaved = true;
+            }).catch(err => {
+                console.error('Error copying data: ', err);
+            });
+        });
+
+        // Clear records with unsaved changes confirmation
+        btnClear.addEventListener('click', () => {
+            if (records.length === 0) return;
+
+            if (!isSaved) {
+                const confirmClear = confirm("You have unsaved or uncopied records. Are you sure you want to clear the table?");
+                if (!confirmClear) return;
+            }
+
+            records = [];
+            recordCounter = 1;
+            isSaved = true;
+            renderTable();
+        });
+
+        // -------------------------
+        // Play/Pause & Wake Lock
+        // -------------------------
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.error(`Wake Lock error: ${err.name}`);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => { wakeLock = null; });
+            }
+        }
+
+        powerBtn.addEventListener('click', async () => {
+            if (!isPlaying) {
+                // Turn ON
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+                    masterGainNode = audioCtx.createGain();
+                    masterGainNode.gain.value = parseFloat(gainSlider.value) / 100;
+                    masterGainNode.connect(audioCtx.destination);
+                }
+
+                if (audioCtx.state === 'suspended') {
+                    await audioCtx.resume();
+                }
+
+                isPlaying = true;
+                powerBtn.classList.add('active');
+                powerText.textContent = "On";
+
+                startTime = audioCtx.currentTime;
+                scheduledIndices.clear();
+                scheduler();
+
+                requestWakeLock();
+            } else {
+                // Turn OFF
+                isPlaying = false;
+                clearTimeout(timerID);
+                powerBtn.classList.remove('active');
+                powerText.textContent = "Off";
+
+                releaseWakeLock();
+            }
+        });
+
+        // -------------------------
+        // Service Worker Registration
+        // -------------------------
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then((registration) => {
+                    console.log('SW registration successful');
+                }).catch((err) => {
+                    console.log('SW registration failed: ', err);
+                });
+            });
+        }
+
+    </script>
+</body>
+
+</html>
