@@ -1,4 +1,4 @@
-# *IoTick* Web Application: User and Technical Guide
+# *IoTick* Web Application
 
 *Acoustic pulse generator and phase-delay controller for auditory timing experiments*
 
