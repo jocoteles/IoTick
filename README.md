@@ -30,7 +30,7 @@ The IoTick application is an open-source, client-side Progressive Web Applicatio
 
 ### 2.1 Loading and installing as a Progressive Web App (PWA)
 
-1. **Initial loading:** Open the *IoTick* URL in your smartphone's web browser while connected to Wi-Fi or mobile data.
+1. **Initial loading:** Open the [*IoTick* URL](https://jocoteles.github.io/IoTick/) in your smartphone's web browser while connected to Wi-Fi or mobile data.
 2. **Installing on iOS (Safari):**
    - Tap the ***Share*** button (square with an upward arrow) at the bottom of the screen.
    - Scroll down and select ***Add to Home Screen***.
